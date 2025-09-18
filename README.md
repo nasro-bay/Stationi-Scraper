@@ -136,7 +136,6 @@ ouedkniss-scraper/
 
 ## Legal & Ethical Considerations
 
-- This scraper uses OuedKniss's public GraphQL API
 - Respect the website's terms of service
 - Use reasonable rate limits to avoid overwhelming their servers
 - Consider the ethical implications of data collection
@@ -148,6 +147,7 @@ ouedkniss-scraper/
 ## Contributing
 
 Feel free to submit issues, fork the repository, and create pull requests for any improvements.
+
 
 
 
