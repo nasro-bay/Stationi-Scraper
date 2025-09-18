@@ -143,13 +143,12 @@ ouedkniss-scraper/
 - Ensure compliance with local data protection laws
 ### Disclaimer
 
-- This dataset is not affiliated with or endorsed by OuedKniss.com.
-- Collected for educational and research purposes only.
-- Use at your own responsibility and in accordance with the website’s terms of service.
+- **Use at your own responsibility** and in accordance with the website’s terms of service.
 
 ## Contributing
 
 Feel free to submit issues, fork the repository, and create pull requests for any improvements.
+
 
 
 
