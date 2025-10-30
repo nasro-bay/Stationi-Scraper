@@ -5,7 +5,7 @@ from utils import get_payload_search
 
 if TYPE=="MINI":
     from utils import get_payload_post_mini as get_payload_post
-else:
+elif TYPE=="ALL":
     from utils import get_payload_post_all as get_payload_post
 
 class OuedKnissAPI:

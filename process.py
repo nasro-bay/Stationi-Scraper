@@ -150,7 +150,7 @@ class CSVManagerALl:
             # Basic announcement info
             "id", "reference", "title", "slug", "description", "creation_date", 
             "status", "street_name",
-            
+            "created_at",
             # Price information
             "price", "price_preview", "old_price", "old_price_preview", 
             "price_type", "price_unit", "exchange_type",
@@ -267,7 +267,7 @@ class CSVManagerMini:
         self.filename = filename
         
         # Define only the essential base fieldnames
-        base_fieldnames = ["reference", "title", "description", "price_preview", "created_at", "city"]
+        base_fieldnames = ["reference", "title", "description", "price_preview", "created_at", "city", "price_unit"]
         
         # Add spec columns with prefix to avoid conflicts
         if all_spec_labels:
