@@ -8,7 +8,7 @@ from settings import *
 if TYPE=="MINI":
     from process import CSVManagerMini as CSVManager, DataProcessorMini as DataProcessor
 elif TYPE=="ALL":
-    from process import CSVManagerALl as CSVManager, DataProcessorMini as DataProcessor
+    from process import CSVManagerALl as CSVManager, DataProcessorAll as DataProcessor
 
 
 def scrape_ouedkniss(category_slug: str, max_pages:int = None) -> str:
