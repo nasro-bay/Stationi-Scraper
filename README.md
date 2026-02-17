@@ -14,19 +14,6 @@ A robust Python-based web scraper for extracting detailed product listings and m
   - `ALL`: Comprehensive details including store info, variants, and full media records.
 - **Configurable Sessions**: Set a limit on how many items to scrape per execution (`LIMIT_PER_RUN`).
 
-## 🛠️ Installation
-
-1. **Clone the repository**:
-   ```bash
-   git clone https://github.com/abdelhak-k/OuedKniss-Scraper.git
-   cd ouedkniss-scraper
-   ```
-
-2. **Install Dependencies**:
-   ```bash
-   pip install -r requirements.txt
-   ```
-
 ## 📖 How to Use
 
 ### 1. Configure the Target
