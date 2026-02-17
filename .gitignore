@@ -1,2 +1,5 @@
 __pycache__
 *.csv
+explanation.md
+downloads/
+scraped_ids.txt

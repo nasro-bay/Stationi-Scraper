@@ -1,18 +1,25 @@
 import csv
 
-# if you want to add or remove features you need to manually add/delete in the following places:
-# utils.get_payload_post and inside our classes change processed_data, base_fieldnames
+"""
+Data Transformation and CSV Management.
+This module handles the flattening of nested GraphQL responses into tabular CSV format.
+"""
+
+# NOTE: If you add/remove fields in the GraphQL queries (utils.py), 
+# you MUST update the mapping logic in these classes.
 
 class DataProcessorAll:
+    """
+    Handles complex transformation of the 'ALL' data mode.
+    Extracts deep nested fields like city, store, and media URLs.
+    """
     def process_announcement(self, raw_data, all_spec_labels=None):
         if not raw_data:
             return None
         
-        # Extract all basic informations
-        # NOTE: YOU can remove the unwanted columns
-        # do it by removing the unwanted features from the processed_data dict and from the qeury in get_payload_post function
+        # Mapping base API fields to a flat dictionary
         processed_data = {
-            # Basic announcement info
+            # Basic identity and content
             "id": raw_data.get("id"),
             "reference": raw_data.get("reference"),
             "title": raw_data.get("title"),
@@ -22,7 +29,7 @@ class DataProcessorAll:
             "status": raw_data.get("status"),
             "street_name": raw_data.get("street_name"),
             
-            # Price information
+            # Financials
             "price": raw_data.get("price"),
             "price_preview": raw_data.get("pricePreview"),
             "old_price": raw_data.get("oldPrice"),
@@ -31,31 +38,31 @@ class DataProcessorAll:
             "price_unit": raw_data.get("priceUnit"),
             "exchange_type": raw_data.get("exchangeType"),
             
-            # Delivery and contact info
+            # Logistics and Metadata
             "has_delivery": raw_data.get("hasDelivery"),
             "delivery_type": raw_data.get("deliveryType"),
             "has_phone": raw_data.get("hasPhone"),
             "has_email": raw_data.get("hasEmail"),
             "quantity": raw_data.get("quantity"),
             
-            # Category information
+            # Categorization
             "category_id": raw_data.get("category", {}).get("id") if raw_data.get("category") else None,
             "category_name": raw_data.get("category", {}).get("name") if raw_data.get("category") else None,
             "category_slug": raw_data.get("category", {}).get("slug") if raw_data.get("category") else None,
             
-            # Location information
+            # Geographic placeholders (filled below)
             "city": None,
             "city_id": None,
             "region": None,
             "region_id": None,
             
-            # User information
+            # User Identity
             "user_id": raw_data.get("user", {}).get("id") if raw_data.get("user") else None,
             "username": raw_data.get("user", {}).get("username") if raw_data.get("user") else None,
             "user_display_name": raw_data.get("user", {}).get("displayName") if raw_data.get("user") else None,
             "avatar_url": raw_data.get("user", {}).get("avatarUrl") if raw_data.get("user") else None,
             
-            # Store information
+            # Storefront context
             "is_from_store": raw_data.get("isFromStore"),
             "store_id": None,
             "store_name": None,
@@ -66,12 +73,12 @@ class DataProcessorAll:
             "store_announcements_count": None,
             "store_status": None,
             
-            # Media information
+            # Media Summaries
             "default_media_url": None,
             "default_media_type": None,
             "media_count": 0,
             
-            # Additional features
+            # Platform Features
             "is_comment_enabled": raw_data.get("isCommentEnabled"),
             "no_adsense": raw_data.get("noAdsense"),
             "external_url": raw_data.get("orderExternalUrl"),
@@ -80,7 +87,7 @@ class DataProcessorAll:
             "variants_count": 0
         }
         
-        # Extract city and region information
+        # Logic to flatten City and Region hierarchy
         if raw_data.get("cities") and len(raw_data["cities"]) > 0:
             city_data = raw_data["cities"][0]
             processed_data["city"] = city_data.get("name")
@@ -90,7 +97,7 @@ class DataProcessorAll:
                 processed_data["region"] = city_data["region"].get("name")
                 processed_data["region_id"] = city_data["region"].get("id")
         
-        # Extract store information
+        # Flattening Store detailed information
         if raw_data.get("store"):
             store_data = raw_data["store"]
             processed_data["store_id"] = store_data.get("id")
@@ -102,7 +109,7 @@ class DataProcessorAll:
             processed_data["store_announcements_count"] = store_data.get("announcementsCount")
             processed_data["store_status"] = store_data.get("status")
         
-        # Extract media information
+        # Extracting primary media info
         if raw_data.get("defaultMedia"):
             processed_data["default_media_url"] = raw_data["defaultMedia"].get("mediaUrl")
             processed_data["default_media_type"] = raw_data["defaultMedia"].get("mimeType")
@@ -110,16 +117,16 @@ class DataProcessorAll:
         if raw_data.get("medias"):
             processed_data["media_count"] = len(raw_data["medias"])
         
-        # Extract variants count
+        # Tracking variants for store-based listings
         if raw_data.get("variants"):
             processed_data["variants_count"] = len(raw_data["variants"])
         
-        # Add spec columns (initialize all with None)
+        # Initialize dynamic Specification columns (e.g., spec_RAM, spec_Color)
         if all_spec_labels:
             for label in all_spec_labels:
                 processed_data[f"spec_{label}"] = None
         
-        # Fill in actual spec values
+        # Populate Specification values by matching keys
         if raw_data.get("specs"):
             for spec in raw_data["specs"]:
                 label = spec["specification"]["label"]
@@ -129,7 +136,10 @@ class DataProcessorAll:
         return processed_data
     
     def collect_all_specs(self, announcements_data):
-        """Collect all unique specification labels from all announcements"""
+        """
+        Scans a batch of announcements to identify every unique specification label present.
+        This is necessary for building consistent CSV headers.
+        """
         all_specs = set()
         
         for raw_data in announcements_data:
@@ -141,46 +151,31 @@ class DataProcessorAll:
         return all_specs
 
 class CSVManagerALl:
-    
+    """
+    Manages CSV file lifecycle and writing for 'ALL' data mode.
+    """
     def __init__(self, filename, all_spec_labels=None):
         self.filename = filename
         
-        # Define all base fieldnames for complete data extraction
+        # Canonical list of base fieldnames
         base_fieldnames = [
-            # Basic announcement info
             "id", "reference", "title", "slug", "description", "creation_date", 
-            "status", "street_name",
-            "created_at",
-            # Price information
+            "status", "street_name", "created_at",
             "price", "price_preview", "old_price", "old_price_preview", 
             "price_type", "price_unit", "exchange_type",
-            
-            # Delivery and contact info
             "has_delivery", "delivery_type", "has_phone", "has_email", "quantity",
-            
-            # Category information
             "category_id", "category_name", "category_slug",
-            
-            # Location information
             "city", "city_id", "region", "region_id",
-            
-            # User information
             "user_id", "username", "user_display_name", "avatar_url",
-            
-            # Store information
             "is_from_store", "store_id", "store_name", "store_slug", 
             "store_description", "store_image_url", "store_follower_count", 
             "store_announcements_count", "store_status",
-            
-            # Media information
             "default_media_url", "default_media_type", "media_count",
-            
-            # Additional features
             "is_comment_enabled", "no_adsense", "external_url", "messenger_link", 
             "show_analytics", "variants_count"
         ]
         
-        # Add spec columns with prefix to avoid conflicts
+        # Append dynamic spec columns at the end
         if all_spec_labels:
             spec_fieldnames = [f"spec_{label}" for label in sorted(all_spec_labels)]
             self.fieldnames = base_fieldnames + spec_fieldnames
@@ -195,7 +190,6 @@ class CSVManagerALl:
         self.writer = csv.DictWriter(self.csvfile, fieldnames=self.fieldnames)
         self.writer.writeheader()
         print(f"CSV file initialized: {self.filename}")
-        print(f"Total columns: {len(self.fieldnames)}")
     
     def write_rows(self, data_list):
         if not data_list or not self.writer:
@@ -204,7 +198,9 @@ class CSVManagerALl:
         written_count = 0
         for data in data_list:
             if data:
-                self.writer.writerow(data)
+                # Filter dictionary data to match fieldnames only
+                filtered_data = {k: v for k, v in data.items() if k in self.fieldnames}
+                self.writer.writerow(filtered_data)
                 written_count += 1
         
         self.csvfile.flush()
@@ -213,14 +209,16 @@ class CSVManagerALl:
     def close(self):
         if self.csvfile:
             self.csvfile.close()
-            print(f"CSV file closed: {self.filename}")
 
 class DataProcessorMini:
+    """
+    Handles lightweight transformation of 'MINI' data mode.
+    Focuses only on essential product info.
+    """
     def process_announcement(self, raw_data, all_spec_labels=None):
         if not raw_data:
             return None
         
-        # Extract only the essential fields
         processed_data = {
             "reference": raw_data.get("reference"),
             "title": raw_data.get("title"),
@@ -231,16 +229,13 @@ class DataProcessorMini:
             "city": None
         }
         
-        # Extract city information
         if raw_data.get("cities") and len(raw_data["cities"]) > 0:
             processed_data["city"] = raw_data["cities"][0].get("name")
         
-        # Add spec columns (initialize all with None)
         if all_spec_labels:
             for label in all_spec_labels:
                 processed_data[f"spec_{label}"] = None
         
-        # Fill in actual spec values
         if raw_data.get("specs"):
             for spec in raw_data["specs"]:
                 label = spec["specification"]["label"]
@@ -250,26 +245,22 @@ class DataProcessorMini:
         return processed_data
     
     def collect_all_specs(self, announcements_data):
-        """Collect all unique specification labels from all announcements"""
         all_specs = set()
-        
         for raw_data in announcements_data:
             if raw_data and raw_data.get("specs"):
                 for spec in raw_data["specs"]:
                     label = spec["specification"]["label"]
                     all_specs.add(label)
-        
         return all_specs
 
 class CSVManagerMini:
-    
+    """
+    Manages CSV file lifecycle and writing for 'MINI' data mode.
+    """
     def __init__(self, filename, all_spec_labels=None):
         self.filename = filename
-        
-        # Define only the essential base fieldnames
         base_fieldnames = ["reference", "title", "description", "price_preview", "created_at", "city", "price_unit"]
         
-        # Add spec columns with prefix to avoid conflicts
         if all_spec_labels:
             spec_fieldnames = [f"spec_{label}" for label in sorted(all_spec_labels)]
             self.fieldnames = base_fieldnames + spec_fieldnames
@@ -283,25 +274,19 @@ class CSVManagerMini:
         self.csvfile = open(self.filename, 'w', newline='', encoding='utf-8')
         self.writer = csv.DictWriter(self.csvfile, fieldnames=self.fieldnames)
         self.writer.writeheader()
-        print(f"CSV file initialized: {self.filename}")
-        print(f"Total columns: {len(self.fieldnames)}")
-        print(f"First 10 columns: {', '.join(self.fieldnames[:10])}")
     
     def write_rows(self, data_list):
         if not data_list or not self.writer:
             return 0
-        
         written_count = 0
         for data in data_list:
             if data:
-                self.writer.writerow(data)
+                filtered_data = {k: v for k, v in data.items() if k in self.fieldnames}
+                self.writer.writerow(filtered_data)
                 written_count += 1
-        
         self.csvfile.flush()
         return written_count
     
     def close(self):
         if self.csvfile:
             self.csvfile.close()
-            print(f"CSV file closed: {self.filename}")
-

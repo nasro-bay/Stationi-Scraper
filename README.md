@@ -1,155 +1,74 @@
-# OuedKniss Scraper
-A Python based web scraper for extracting product listings from OuedKniss.com through their GraphQL API. This tool allows you to collect announcements data and save it into a csv file, it's flexible to any type of products you're trying to get data about.
+# OuedKniss Car & Product Scraper
 
-## Features
+A robust Python-based web scraper for extracting detailed product listings and media from OuedKniss.com. This tool leverages the official GraphQL API to provide high-speed, structured data extraction for any category, including specialized support for car listings.
 
-- Robust API Integration: Uses OuedKniss GraphQL API for reliable data extraction
-- Flexible Data Extraction: Configurable between minimal and comprehensive data collection
-- Flexible changes: Change constants through settings.py 
-- Error Handling & Retry Logic: Handles connection errors
-- Automatic Pagination: Scrapes multiple pages automatically
-- Dynamic Specifications: Automatically detects and includes product-specific specifications
-- CSV Export: Exports data to timestamped CSV files
+## 🚀 Key Features
 
+- **GraphQL API Integration**: Direct communication with the backend for maximum speed and data accuracy.
+- **Image Downloading**: Automatically downloads and organizes product images for every listing.
+- **Smart Tracking System**: Remembers already scraped items using `scraped_ids.txt` to prevent duplicates and save bandwidth.
+- **Automated Rate Limiting**: Intelligent delays between requests to ensure respectful scraping and avoid IP blocking.
+- **Dynamic Specifications**: Automatically detects and maps technical fields (like Mileage, Year, Brand, etc.) into CSV columns.
+- **Dual Extraction Modes**:
+  - `MINI`: Speed-focused, fetches essential fields only.
+  - `ALL`: Comprehensive details including store info, variants, and full media records.
+- **Configurable Sessions**: Set a limit on how many items to scrape per execution (`LIMIT_PER_RUN`).
 
-## Requirements
+## 🛠️ Installation
 
-- Python 3.6+
-- Required packages: **requests>=2.32.3**
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/abdelhak-k/OuedKniss-Scraper.git
+   cd ouedkniss-scraper
+   ```
 
-## Installation
+2. **Install Dependencies**:
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-1. Clone this repository:
-```bash
-git clone https://github.com/abdelhak-k/OuedKniss-Scraper.git
-cd ouedkniss-scraper
-```
+## 📖 How to Use
 
-* **optional: create virtual env**
+### 1. Configure the Target
+Open `settings.py` or `main.py` to adjust your scraping parameters.
 
-2. Install required dependencies:
-```bash
-pip install -r requirements.txt
-```
+- **Category Slug**: Identify your target in `main.py`. For example, `automobiles_vehicules` for cars.
+- **Extraction Depth**: Set `TYPE = "ALL"` in `settings.py` if you need technical specs and images.
+- **Throughput**: Adjust `LIMIT_PER_RUN` in `settings.py` (Default: 10 items).
 
-## How to use
-
-### Finding Category Slugs
-
-To find the category slug for the products you want to scrape:
-
-1. Go to [www.ouedkniss.com](https://www.ouedkniss.com)
-2. Navigate to the category you're interested in
-3. Look at the URL in your browser address bar
-4. The category slug is usually the part after the domain and before `/1`
-
-**URL Format**: `https://www.ouedkniss.com/categorySlug/1`
-
-**Examples**:
-- URL: `https://www.ouedkniss.com/pieces_detachees/1` → Category slug: `pieces_detachees`
-
-if this method did not work you should browser the developer tools and check the payload manually under the operation searchQuery.
-
-
-### Usage Examples
-
-#### Basic Usage
-```python
-# Scrape only first 5 pages
-result = scrape_ouedkniss("informatique-ordinateur-portable",max_pages=5)
-```
-
-#### Scrape all the possible Pages
-```python
-# all possible laptop related pages 
-result = scrape_ouedkniss("informatique-ordinateur-portable")
-```
-**Running the scraper**:
+### 2. Run the Scraper
 ```bash
 python main.py
 ```
-#### Output File
 
-Data is automatically saved to a CSV file:
-```
-ouedkniss_<category_slug>_YYYYMMDD_HHMMSS.csv
-```
-#### Example Output
+### 3. Review Results
+- **CSV Data**: Saved as `ouedkniss_<category>_<timestamp>.csv`.
+- **Media**: Downloaded into `downloads/announcement_<id>/`.
+- **Persistence**: `scraped_ids.txt` will be updated with the processed IDs.
 
-```csv
-reference,title,description,price_preview,created_at,city,spec_Marque,spec_Modèle,spec_RAM
-REF123,Laptop Dell Inspiron,Gaming laptop in excellent condition,85000 DA,2025-08-10T14:30:22Z,Alger,Dell,Inspiron 15,8GB
-REF124,MacBook Pro,Professional laptop for developers,250000 DA,2025-08-10T13:45:10Z,Oran,Apple,MacBook Pro,16GB
-```
+## ⚙️ Configuration (`settings.py`)
 
+| Setting | Description | Recommended |
+| :--- | :--- | :--- |
+| `WAIT_TIME` | Delay between API requests | `0.5` seconds |
+| `TYPE` | Deep or Shallow extraction | `"ALL"` for cars |
+| `LIMIT_PER_RUN`| Max new items per execution | `10` or higher |
+| `HEADER` | Browser User-Agent string | Keep updated |
 
+## 📂 Project Structure
 
-### Data Extraction Mode
-```python
-TYPE = "MINI"  # Options: "MINI" or "ALL"
-```
+- `main.py`: Interactive entry point for the user.
+- `scraper.py`: Coordinates the extraction, tracking, and image logic.
+- `downloader.py`: Dedicated module for media handling and storage.
+- `fetch_api.py`: Low-level GraphQL communication client.
+- `utils.py`: Contains API payloads and persistence helpers.
+- `process.py`: Logic for flattening nested API data into tabular CSV format.
 
-- **MINI**: Extracts essential fields only (reference, title, description, price_preview, created_at, city, product specs)
-- **ALL**: Extracts comprehensive data including store info, media, variants ... absolutly everything
-- **Customizing Data Fields (specific portion of features)**:
-1. Add your new mode to `TYPE` options in `settings.py`
-2. Create corresponding processing logic in `process.py` and `utils.py`
-3. Create DataProcessor, CSVManager classes and create a new get_payload_post query in utils; just remove unwanted things from get_payload_post_all and fix DataProcessor and CSVManager accordingly
-4. Update the field definitions accordingly
+## ⚠️ Important Considerations
 
+- **Ethical Scraping**: Always use reasonable `WAIT_TIME` to protect the servers.
+- **Data Privacy**: Ensure local compliance when handling user data (stores/usernames).
+- **Maintenance**: GraphQL queries in `utils.py` may need updates if OuedKniss changes its API schema.
 
-
-### Rate Limiting & Best Practices
-
-- **Respect the API**: The default `WAIT_TIME = 0.1` is recommended to avoid overwhelming the server
-- **Monitor your requests**: Large categories may have 20,000+ items - plan accordingly
-- **Handle interruptions**: The scraper is designed to retry failed requests automatically
-- **Check file sizes**: Comprehensive scraping can generate large CSV files
-
-
-
-## Troubleshooting
-### Missing Data
-If some fields are empty this is normal behavior beacuse some fields may not be available for certain categories and not all products have all specifications. 
-
-### Large Memory Usage
-For categories with many items:
-- Consider scraping in smaller batches using `max_pages`
-- Monitor your system's memory usage
-- Large datasets are processed in memory before CSV writing
-
-## File Structure
-
-```
-ouedkniss-scraper/
-├── main.py           # Entry point
-├── scraper.py        # Main scraping logic
-├── fetch_api.py      # API request handlers
-├── process.py        # Data processing (MINI+ALL mode)
-├── utils.py          # Utilities
-├── settings.py       # Configuration file
-├── requirements.txt  # Dependencies
-└── README.md       
-```
-
-
-
-## Legal & Ethical Considerations
-
-- Respect the website's terms of service
-- Use reasonable rate limits to avoid overwhelming their servers
-- Consider the ethical implications of data collection
-- Ensure compliance with local data protection laws
-### Disclaimer
-
-- **Use at your own responsibility** and in accordance with the website’s terms of service.
-
-## Contributing
-
-Feel free to submit issues, fork the repository, and create pull requests for any improvements.
-
-
-
-
-
-
+---
+*Disclaimer: Use this tool responsibly. The authors are not responsible for any misuse or legal actions resulting from the use of this software.*

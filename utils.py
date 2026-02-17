@@ -1,14 +1,20 @@
+import os
 from settings import COUNT
+
+"""
+Utility functions for OuedKniss API payloads and persistence.
+"""
 
 def get_payload_search(category_slug, page):
     """
-    # you can filter the posts you're interested in
-    # categorySlug will filter what type of product you're interested in
-    # how can I get the categorySlug name? you should do it manually; go to www.ouedkniss.com with the developer mode and see what requests has been sent
-    # you will find some examples in the main
-    # and select graphql the one one with operation name: SearchQuery
-    # count is the number of posts you will in a single query
-    # you can still get other informations, check the payload on the request sent from www.ouedkniss.com
+    Constructs the GraphQL payload for searching announcements.
+    
+    Args:
+        category_slug (str): The slug of the category to search.
+        page (int): The page number to fetch.
+        
+    Returns:
+        dict: The GraphQL request payload.
     """
     return {
         "operationName": "SearchQuery",
@@ -50,8 +56,13 @@ def get_payload_search(category_slug, page):
     }
 
 def get_payload_post_all(ann_id):
-    # all available data from the API
-    # NOTE: YOU can remove the unwanted features to make the process much faster
+    """
+    Constructs a comprehensive GraphQL payload to fetch all details of an announcement.
+    Includes technical specs, location, user info, and media.
+    
+    Args:
+        ann_id (str): The ID of the announcement.
+    """
     return {
         "operationName": "AnnouncementGet",
         "variables": {"id": str(ann_id)},
@@ -202,7 +213,39 @@ def get_payload_post_all(ann_id):
         """
     }
 
+def load_scraped_ids(filename):
+    """
+    Reads already processed announcement IDs from a persistence file.
+    
+    Args:
+        filename (str): Path to the tracking file.
+        
+    Returns:
+        set: A set of strings containing announcement IDs.
+    """
+    if not os.path.exists(filename):
+        return set()
+    with open(filename, 'r', encoding='utf-8') as f:
+        return set(line.strip() for line in f if line.strip())
+
+def save_scraped_id(filename, ann_id):
+    """
+    Persists a successfully scraped ID to the tracking file.
+    
+    Args:
+        filename (str): Path to the tracking file.
+        ann_id (str): The ID to save.
+    """
+    with open(filename, 'a', encoding='utf-8') as f:
+        f.write(f"{ann_id}\n")
+
 def get_payload_post_mini(ann_id):
+    """
+    Constructs a lightweight GraphQL payload for basic announcement details.
+    
+    Args:
+        ann_id (str): The ID of the announcement.
+    """
     return {
         "operationName": "AnnouncementGet",
         "variables": {"id": str(ann_id)},
