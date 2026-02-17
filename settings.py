@@ -6,6 +6,7 @@ Adjust these values to control the scraper's behavior, rate limiting, and extrac
 # The GraphQL endpoint for OuedKniss
 API_URL = "https://api.ouedkniss.com/graphql"
 
+
 # Headers to mimic a real browser session and avoid bot detection
 HEADER = {
     "Content-Type": "application/json",
@@ -28,4 +29,4 @@ TYPE= "ALL"
 TRACKING_FILE = "scraped_ids.txt"
 
 # Limit the number of new announcements processed in a single execution
-LIMIT_PER_RUN = 10
+LIMIT_PER_RUN = 100
