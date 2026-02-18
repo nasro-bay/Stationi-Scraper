@@ -29,4 +29,5 @@ TYPE= "ALL"
 TRACKING_FILE = "scraped_ids.txt"
 
 # Limit the number of new announcements processed in a single execution
-LIMIT_PER_RUN = 100
+# Set to None to process ALL new announcements found
+LIMIT_PER_RUN = 500

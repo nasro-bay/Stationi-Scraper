@@ -47,9 +47,17 @@ def scrape_ouedkniss(category_slug: str, max_pages:int = None) -> str:
         new_announcement_ids = [aid for aid in announcement_ids if str(aid) not in scraped_ids]
         print(f"Filtered: {len(new_announcement_ids)} new announcements found.")
         
+        # Filter: Keep only announcements with even IDs
+        new_announcement_ids = [aid for aid in new_announcement_ids if int(aid) % 2 == 0]
+        print(f"Even-ID filter applied: {len(new_announcement_ids)} announcements remaining.")
+        
         # Apply per-run throughput limit (see settings.py)
-        target_ids = new_announcement_ids[:LIMIT_PER_RUN]
-        print(f"Processing {len(target_ids)} announcements for this session.")
+        # If LIMIT_PER_RUN is None, process ALL new announcements
+        if LIMIT_PER_RUN is not None:
+            target_ids = new_announcement_ids[:LIMIT_PER_RUN]
+        else:
+            target_ids = new_announcement_ids
+        print(f"Processing {len(target_ids)} announcements for this session (limit: {'None (ALL)' if LIMIT_PER_RUN is None else LIMIT_PER_RUN}).")
         
         if not target_ids:
             print("No new announcements to process. Exiting.")
