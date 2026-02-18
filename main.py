@@ -13,7 +13,7 @@ if __name__ == "__main__":
     # MAX PAGES: Limit how many initial pages the scraper scans for IDs.
     # Note: The actual processing limit is controlled by LIMIT_PER_RUN in settings.py
     # Change to None to scan the entire category catalog.
-    max_scan_pages = 20  # None = scan ALL pages in the category
+    max_scan_pages = 10  # None = scan ALL pages in the category
     
     print(f"--- Starting OuedKniss Scraper Session ---")
     print(f"Target: {target_category}")

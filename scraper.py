@@ -48,7 +48,7 @@ def scrape_ouedkniss(category_slug: str, max_pages:int = None) -> str:
         print(f"Filtered: {len(new_announcement_ids)} new announcements found.")
         
         # Filter: Keep only announcements with even IDs
-        new_announcement_ids = [aid for aid in new_announcement_ids if int(aid) % 2 == 0]
+        new_announcement_ids = [aid for aid in new_announcement_ids if int(aid) % 2 == 1]
         print(f"Even-ID filter applied: {len(new_announcement_ids)} announcements remaining.")
         
         # Apply per-run throughput limit (see settings.py)
